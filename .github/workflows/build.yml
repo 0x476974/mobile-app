@@ -1,0 +1,50 @@
+name: Build Mobile Apps
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-apps:
+    # Must use macOS to allow iOS compilation
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x' # Or '9.0.x' depending on your project
+
+    - name: Install Android and iOS Workloads
+      run: |
+        dotnet workload install android
+        dotnet workload install ios
+
+    - name: Restore Dependencies
+      run: dotnet restore mobile-app.sln
+
+    # --- 1. COMPILE ANDROID ---
+    - name: Build Android App (Release)
+      run: dotnet build AndroidApp1/AndroidApp1.csproj -c Release -f net8.0-android
+
+    # --- 2. COMPILE iOS ---
+    - name: Build iOS App (Release)
+      run: dotnet build iOSApp1/iOSApp1.csproj -c Release -f net8.0-ios
+
+    # --- 3. SAVE THE BUILT FILES ---
+    - name: Upload Android Artifacts
+      uses: actions/artifacts/upload@v4
+      with:
+        name: android-app
+        path: AndroidApp1/bin/Release/net8.0-android/*-Signed.apk
+
+    - name: Upload iOS Artifacts
+      uses: actions/artifacts/upload@v4
+      with:
+        name: ios-app
+        path: iOSApp1/bin/Release/net8.0-ios/*.app
