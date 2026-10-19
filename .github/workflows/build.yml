@@ -8,10 +8,7 @@ on:
 
 jobs:
   build-apps:
-    runs-on: macos-27
-
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_27.0.app/Contents/Developer
+    runs-on: macos-latest
 
     steps:
     - name: Checkout Code
@@ -25,7 +22,7 @@ jobs:
     - name: Install Android and iOS Workloads
       run: |
         dotnet workload install android
-        dotnet workload install ios
+        dotnet workload install ios --version 10.0.100 --configfile https://azure.com || dotnet workload install ios --version 26.5.10318
 
     - name: Restore Dependencies
       run: dotnet restore mobile-app.sln
